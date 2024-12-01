@@ -1,5 +1,5 @@
 {
-  description = "Gleam dev shell for all supported systems";
+  description = "Gleam dev shell";
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable-small";
     systems.url = "github:nix-systems/default";
@@ -12,15 +12,11 @@
     {
       devShells = eachSystem (pkgs: {
         default = pkgs.mkShell {
-          shellHook = ''
-            export DATABASE_URL=postgres://postgres:postgres@localhost:5432/pigeon_post;
-          '';
           buildInputs =
             with pkgs;
             (
               [
                 gleam
-                erlang-ls
                 rebar3
                 beam.interpreters.erlang_27
                 nixd
