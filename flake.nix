@@ -16,6 +16,7 @@
             with pkgs;
             (
               [
+                watchexec
                 gleam
                 rebar3
                 beam.interpreters.erlang_27
