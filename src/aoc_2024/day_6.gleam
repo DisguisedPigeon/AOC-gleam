@@ -78,7 +78,12 @@ pub fn parse(input: String) -> Data {
 }
 
 pub fn pt_1(input: Data) {
-  simulate(input.guard, input.boxes, input.size, set.new())
+  simulate(
+    input.guard,
+    input.boxes,
+    input.size,
+    set.new() |> set.insert(#(input.guard.x, input.guard.y)),
+  )
   |> set.size
 }
 
