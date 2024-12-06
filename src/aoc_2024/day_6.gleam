@@ -1,5 +1,7 @@
 import gleam/dict.{type Dict}
+import gleam/io
 import gleam/list
+import gleam/result
 import gleam/set.{type Set}
 import gleam/string
 
@@ -82,8 +84,11 @@ pub fn pt_1(input: Data) {
     input.guard,
     input.boxes,
     input.size,
-    set.new() |> set.insert(#(input.guard.x, input.guard.y)),
+    set.from_list([#(input.guard.x, input.guard.y)]),
+    False,
+    0,
   )
+  |> result.unwrap(set.new())
   |> set.size
 }
 
@@ -92,15 +97,26 @@ fn simulate(
   blocks: Dict(Coordinates, String),
   size: Size,
   acc: Set(Coordinates),
-) {
+  limit: Bool,
+  steps: Int,
+) -> Result(Set(Coordinates), Nil) {
   case dict.get(blocks, space_in_front(guard)) {
+    _ if limit && steps > 100_000 -> Error(Nil)
     Error(Nil) ->
       case move(guard, False) {
-        Guard(x:, y:, ..) if x < 0 || y < 0 || x >= size.w || y >= size.h -> acc
+        Guard(x:, y:, ..) if x < 0 || y < 0 || x >= size.w || y >= size.h ->
+          Ok(acc)
         Guard(x:, y:, ..) as after ->
-          simulate(after, blocks, size, set.insert(acc, #(x, y)))
+          simulate(
+            after,
+            blocks,
+            size,
+            set.insert(acc, #(x, y)),
+            limit,
+            steps + 1,
+          )
       }
-    Ok("#") -> simulate(move(guard, True), blocks, size, acc)
+    Ok("#") -> simulate(move(guard, True), blocks, size, acc, limit, steps + 1)
     Ok(_) -> panic as "Invalid input value"
   }
 }
@@ -137,5 +153,30 @@ fn next_direction(guard: Guard) -> Guard {
 }
 
 pub fn pt_2(input: Data) {
-  todo as "part 2 not implemented"
+  let path_spaces =
+    simulate(
+      input.guard,
+      input.boxes,
+      input.size,
+      set.from_list([#(input.guard.x, input.guard.y)]),
+      False,
+      0,
+    )
+    |> result.unwrap(set.new())
+    |> set.to_list
+  use acc, element <- list.fold(path_spaces, 0)
+  case
+    simulate(
+      input.guard,
+      dict.insert(input.boxes, element, "#"),
+      input.size,
+      set.from_list([#(input.guard.x, input.guard.y)]),
+      True,
+      0,
+    )
+  {
+    Ok(_) -> acc
+    Error(_) -> acc + 1
+  }
+  // TODO : calculate loops
 }
