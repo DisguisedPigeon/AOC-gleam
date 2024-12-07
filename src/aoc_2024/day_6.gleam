@@ -1,5 +1,4 @@
 import gleam/dict.{type Dict}
-import gleam/io
 import gleam/list
 import gleam/result
 import gleam/set.{type Set}
@@ -178,5 +177,4 @@ pub fn pt_2(input: Data) {
     Ok(_) -> acc
     Error(_) -> acc + 1
   }
-  // TODO : calculate loops
 }
