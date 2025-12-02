@@ -9,72 +9,65 @@ pub type Rotation {
   Up(Int)
 }
 
+pub type Dial {
+  Dial(position: Int)
+}
+
 pub fn parse(input: String) -> List(Rotation) {
-  input
-  |> string.split(on: "\n")
-  |> list.map(with: fn(line) {
+  string.split(input, on: "\n")
+  |> list.try_map(with: fn(line) {
     case string.pop_grapheme(line) {
-      Ok(#("L", rest)) -> {
-        use number <- result.try(int.parse(rest))
-        Ok(Down(number))
-      }
-      Ok(#("R", rest)) -> {
-        use number <- result.try(int.parse(rest))
-        Ok(Up(number))
-      }
+      Ok(#("L", rest)) -> int.parse(rest) |> result.map(Down)
+      Ok(#("R", rest)) -> int.parse(rest) |> result.map(Up)
+
       _ -> panic as "Unexpected direction"
     }
-    |> result.lazy_unwrap(fn() {
-      panic as { "Parsing failed on " <> string.inspect(line) }
-    })
   })
+  |> result.lazy_unwrap(fn() { panic as "Parsing failed" })
 }
 
-type Dial {
-  Dial(pointing: Int)
-}
-
-pub fn pt_1(rotations: List(Rotation)) {
+pub fn pt_1(rotations: List(Rotation)) -> Int {
+  // Starting value, #(Dial, Number of hits)
   #(Dial(50), 0)
   |> list.fold(rotations, _, turn_and_count_0s)
+  // Extract the number of zeros from the tuple
   |> pair.second
 }
 
-pub fn pt_2(rotations: List(Rotation)) {
+pub fn pt_2(rotations: List(Rotation)) -> Int {
+  // Starting value, #(Dial, Number of hits)
   #(Dial(50), 0)
   |> list.fold(rotations, _, turn_and_count_0_passes)
+  // Extract the number of zeros from the tuple
   |> pair.second
 }
 
 fn turn(dial: Dial, rotation: Rotation) -> #(Dial, Int) {
   case rotation {
     Down(n) -> {
-      let zero_hits = { { 100 - dial.pointing } % 100 + n } / 100
+      let assert Ok(position) = int.modulo(dial.position - n, 100)
 
-      let assert Ok(dial) = int.modulo(dial.pointing - n, 100)
+      let reverted_position = { 100 - dial.position } % 100
+      let movement_as_positive = reverted_position + n
+      let zero_hitcount = movement_as_positive / 100
 
-      #(Dial(dial), zero_hits)
+      #(Dial(position), zero_hitcount)
     }
 
     Up(n) -> {
-      let zero_hits = { dial.pointing + n } / 100
+      let assert Ok(position) = int.modulo(dial.position + n, 100)
+      let zero_hitcount = { dial.position + n } / 100
 
-      let assert Ok(dial) = int.modulo(dial.pointing + n, 100)
-
-      #(Dial(dial), zero_hits)
+      #(Dial(position), zero_hitcount)
     }
   }
 }
 
-fn points_at_0(dial: Dial) {
-  dial.pointing == 0
-}
-
-fn turn_and_count_0s(acc, rotation) {
+fn turn_and_count_0s(acc: #(Dial, Int), rotation: Rotation) -> #(Dial, Int) {
   let #(dial, count) = acc
-  let #(dial, _0_passes) = turn(dial, rotation)
+  let #(dial, _needed_for_part_2) = turn(dial, rotation)
 
-  case points_at_0(dial) {
+  case dial.position == 0 {
     True -> #(dial, count + 1)
     False -> #(dial, count)
   }
@@ -85,7 +78,6 @@ fn turn_and_count_0_passes(
   rotation: Rotation,
 ) -> #(Dial, Int) {
   let #(dial, count) = acc
-
   let #(dial, passes) = turn(dial, rotation)
 
   #(dial, count + passes)
