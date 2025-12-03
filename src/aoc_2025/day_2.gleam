@@ -40,7 +40,7 @@ pub fn pt_1(input: List(Range)) {
       False -> Error(Nil)
     }
   })
-  |> int.sum
+  |> int.sum()
 }
 
 pub fn pt_2(input: List(Range)) {
@@ -48,7 +48,7 @@ pub fn pt_2(input: List(Range)) {
   |> list.flatten
   |> list.map(int.to_string)
   |> list.filter_map(is_invalid_and_parse)
-  |> int.sum
+  |> int.sum()
 }
 
 fn is_invalid_and_parse(value: String) -> Result(Int, Nil) {
