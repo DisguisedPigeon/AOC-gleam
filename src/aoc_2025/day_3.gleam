@@ -16,49 +16,6 @@ pub fn pt_1(input: List(Bank)) {
   |> int.sum()
 }
 
-type Accumulator {
-  Accumulator(digit: Int, rest: Bank)
-}
-
-pub fn pt_2(input: List(Bank)) -> Int {
-  // // Infinite memory solution (too many combinations >_<)
-  // list.map(input, max_joltage_n_cells(_, 12))
-  // |> int.sum()
-
-  fast_joltage(input, 12)
-}
-
-fn fast_joltage(banks: List(Bank), number_of_chosen_cells: Int) -> Int {
-  list.fold(banks, 0, fn(acc, rest) {
-    let Accumulator(n, _rest) =
-      // Iterator, from number - 1 to 0
-      list.range(number_of_chosen_cells - 1, 0)
-      |> list.fold(Accumulator(0, rest), find_biggest)
-
-    acc + n
-  })
-}
-
-// This function creates a window of possible values, chooses the biggest possible and removes every possible digit that led up to it
-fn find_biggest(acc: Accumulator, iterator: Int) -> Accumulator {
-  let Accumulator(digit:, rest:) = acc
-  let assert Ok(#(max, location)) =
-    // Reverse the list
-    list.reverse(rest)
-    // Drop from the back until we keep the candidates to next most significant digit
-    |> list.drop(iterator)
-    // Return to default order
-    |> list.reverse()
-    // Add locations, indexed to 0
-    |> list.index_map(fn(item, index) { #(item, index) })
-    // Get the biggest candidate
-    |> list.max(fn(a, b) { int.compare(a.0, b.0) })
-
-  // Add the digit to the accumulator
-  //                            Drop all values preceding the chosen one.
-  Accumulator(10 * digit + max, list.drop(rest, location + 1))
-}
-
 fn max_joltage_n_cells(bank: Bank, n: Int) -> Int {
   list.combinations(bank, n)
   |> list.fold(-1, fn(acc, combination) {
@@ -72,10 +29,46 @@ fn max_joltage_n_cells(bank: Bank, n: Int) -> Int {
 }
 
 fn from_digits(combination: List(Int)) -> Int {
-  let assert Ok(l) =
-    list.map(combination, int.to_string)
-    |> string.concat
-    |> int.parse
+  list.fold(combination, 0, fn(acc, v) { acc * 10 + v })
+}
 
-  l
+pub fn pt_2(input: List(Bank)) -> Int {
+  // // Infinite memory solution (too many combinations >_<)
+  // list.map(input, max_joltage_n_cells(_, 12))
+  // |> int.sum()
+
+  fast_joltage(for: input, length: 12)
+}
+
+type Accumulator {
+  Accumulator(digit: Int, rest: Bank)
+}
+
+fn fast_joltage(
+  for banks: List(Bank),
+  length number_of_chosen_cells: Int,
+) -> Int {
+  list.fold(over: banks, from: 0, with: fn(acc: Int, rest: List(Int)) -> Int {
+    let Accumulator(n, _rest) =
+      // This will be the minimum number of candidates we must have left for each choice
+      list.range(from: number_of_chosen_cells - 1, to: 0)
+      |> list.fold(from: Accumulator(0, rest), with: max_possible_joltage)
+
+    acc + n
+  })
+}
+
+fn max_possible_joltage(
+  acc: Accumulator,
+  max_candidates up_to: Int,
+) -> Accumulator {
+  let Accumulator(digit:, rest:) = acc
+  let assert Ok(#(max, location)) =
+    list.reverse(rest)
+    |> list.drop(up_to:)
+    |> list.reverse()
+    |> list.index_map(fn(item, index) { #(item, index) })
+    |> list.max(fn(a, b) { int.compare(a.0, b.0) })
+
+  Accumulator(10 * digit + max, list.drop(rest, location + 1))
 }
