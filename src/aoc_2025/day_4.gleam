@@ -1,35 +1,32 @@
-import gleam/dict.{type Dict}
 import gleam/list
+import gleam/set.{type Set}
 import gleam/string
 
 type Coords =
   #(Int, Int)
 
-type Cell =
-  Nil
-
-pub fn parse(input: String) -> Dict(Coords, Cell) {
+pub fn parse(input: String) -> Set(Coords) {
   string.split(input, on: "\n")
   |> list.map(string.to_graphemes)
-  |> list.index_fold(dict.new(), fn(acc, row, y_index) {
+  |> list.index_fold(set.new(), fn(acc, row, y_index) {
     list.index_fold(row, acc, fn(acc, cell, x_index) {
       case cell {
         "." -> acc
-        "@" -> dict.insert(acc, #(x_index, y_index), Nil)
+        "@" -> set.insert(acc, #(x_index, y_index))
         _ -> panic as { "unexpected character, " <> cell }
       }
     })
   })
 }
 
-pub fn pt_1(input: Dict(Coords, Cell)) {
+pub fn pt_1(input: Set(Coords)) {
   accessible(input)
-  |> dict.size
+  |> set.size
 }
 
-fn accessible(input: Dict(Coords, Cell)) -> Dict(Coords, Cell) {
-  dict.filter(input, fn(k, _) {
-    let #(x, y) = k
+fn accessible(input: Set(Coords)) -> Set(Coords) {
+  set.filter(input, fn(element) {
+    let #(x, y) = element
     let to_check = [
       #(-1, -1),
       #(-1, 0),
@@ -43,7 +40,7 @@ fn accessible(input: Dict(Coords, Cell)) -> Dict(Coords, Cell) {
 
     let number_of_neighbors =
       list.map(to_check, fn(transform) {
-        dict.has_key(input, #(x + transform.0, y + transform.1))
+        set.contains(input, #(x + transform.0, y + transform.1))
       })
       |> list.filter(fn(v) { v })
       |> list.length()
@@ -56,17 +53,17 @@ fn accessible(input: Dict(Coords, Cell)) -> Dict(Coords, Cell) {
   })
 }
 
-pub fn pt_2(input: Dict(Coords, Cell)) {
-  let start_length = input |> dict.size
+pub fn pt_2(input: Set(Coords)) {
+  let start_length = input |> set.size
 
-  let end_length = filter_until_no_removable(input) |> dict.size
+  let end_length = filter_until_no_removable(input) |> set.size
 
   start_length - end_length
 }
 
-fn filter_until_no_removable(acc: Dict(Coords, Cell)) -> Dict(Coords, Cell) {
-  case accessible(acc) |> dict.keys() {
+fn filter_until_no_removable(acc: Set(Coords)) -> Set(Coords) {
+  case accessible(acc) |> set.to_list() {
     [] -> acc
-    accessible -> filter_until_no_removable(dict.drop(acc, accessible))
+    accessible -> filter_until_no_removable(set.drop(acc, accessible))
   }
 }
