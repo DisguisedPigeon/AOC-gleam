@@ -1,5 +1,4 @@
 import gleam/dict
-import gleam/int
 import gleam/list
 import gleam/option
 import gleam/set.{type Set}
