@@ -114,6 +114,6 @@ fn update(machine: Machine, press: Set(Int)) -> Machine {
   Machine(..machine, current_lights:, press_history:)
 }
 
-pub fn pt_2(input: List(Machine)) {
-  todo as "I'm too dumb for this shit"
+pub fn pt_2(_input: List(Machine)) {
+  panic as "I'm too dumb for this shit"
 }

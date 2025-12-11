@@ -23,7 +23,7 @@
           formatter = pkgs.nixfmt-tree;
           devShells.default = pkgs.mkShell {
             shellHook = ''
-              export AOC_COOKIE="[REDACTED]"
+              # export AOC_COOKIE=[REDACTED]
             '';
             buildInputs = with pkgs; [
               # -- DEVENV --
