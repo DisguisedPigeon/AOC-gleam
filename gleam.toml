@@ -18,6 +18,7 @@ gladvent = ">= 2.2.1 and < 3.0.0"
 tote = ">= 1.0.2 and < 2.0.0"
 glearray = ">= 2.1.0 and < 3.0.0"
 graph = ">= 0.1.0 and < 1.0.0"
+rememo = ">= 3.3.0 and < 4.0.0"
 
 [dev-dependencies]
 gleeunit = ">= 1.0.0 and < 2.0.0"
