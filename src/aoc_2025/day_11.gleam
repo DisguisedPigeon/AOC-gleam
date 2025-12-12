@@ -2,7 +2,6 @@ import gleam/bool
 import gleam/dict.{type Dict}
 import gleam/int
 import gleam/list
-import gleam/result
 import gleam/set.{type Set}
 import gleam/string
 import rememo/memo
@@ -21,28 +20,6 @@ pub fn parse(input: String) -> Dict(String, Set(String)) {
 
 pub fn pt_1(input: Dict(String, Set(String))) -> Int {
   count_paths("you", "out", input)
-}
-
-pub fn pt_2(input: Dict(String, Set(String))) -> Int {
-  count_paths_through(from: "svr", nodes: input, to: "out", through: [
-    "fft",
-    "dac",
-  ])
-}
-
-fn count_paths_through(
-  from origin: String,
-  nodes nodes: Dict(String, Set(String)),
-  to destination: String,
-  through through: List(String),
-) -> Int {
-  [origin, ..list.append(through, [destination])]
-  |> list.window_by_2()
-  |> list.map(fn(v) {
-    let #(origin, destination) = v
-    count_paths(origin, destination, nodes)
-  })
-  |> int.product
 }
 
 fn count_paths(
@@ -76,4 +53,26 @@ fn do_count(
     }
   }
   current_iteration + acc
+}
+
+pub fn pt_2(input: Dict(String, Set(String))) -> Int {
+  count_paths_through(from: "svr", nodes: input, to: "out", through: [
+    "fft",
+    "dac",
+  ])
+}
+
+fn count_paths_through(
+  from origin: String,
+  nodes nodes: Dict(String, Set(String)),
+  to destination: String,
+  through through: List(String),
+) -> Int {
+  [origin, ..list.append(through, [destination])]
+  |> list.window_by_2()
+  |> list.map(fn(v) {
+    let #(origin, destination) = v
+    count_paths(origin, destination, nodes)
+  })
+  |> int.product
 }
